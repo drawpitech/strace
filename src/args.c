@@ -18,7 +18,7 @@ static void print_help(void)
 {
     printf("Usage: strace [options] [-p <pid>|<command>]\n");
     printf("Options:\n");
-    for (size_t i = 0; LENGTH(OPTIONS); i++) {
+    for (size_t i = 0; i < LENGTH(OPTIONS); i++) {
         printf("\t");
         if (OPTIONS[i].flag)
             printf("-%c ", OPTIONS[i].c);
