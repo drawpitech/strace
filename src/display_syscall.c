@@ -1,3 +1,10 @@
+/*
+** EPITECH PROJECT, 2024
+** my_strace
+** File description:
+** display_syscall
+*/
+
 #include <stdio.h>
 
 #include "strace.h"
@@ -26,7 +33,7 @@ static void display_args(strace_t *strace, const syscall_t *syscall)
 {
     unsigned long long args[6] = {
         strace->regs.rdi, strace->regs.rsi, strace->regs.rdx,
-        strace->regs.rcx, strace->regs.r8,  strace->regs.r9,
+        strace->regs.rcx, strace->regs.r8, strace->regs.r9,
     };
 
     for (size_t i = 0; i < 6 && syscall->args[i] != 0; i++) {
