@@ -70,22 +70,42 @@ static int parent(pid_t pid)
     return RET_VALID;
 }
 
-int strace(int argc, char **argv)
+static int fork_me_hard(char *filename, args_t *strace)
+{
+    strace->pid = fork();
+    if (strace->pid == -1) {
+        perror("fork");
+        return RET_ERROR;
+    }
+    if (strace->pid == 0)
+        return child(filename);
+    return RET_VALID;
+}
+
+static int follow_me_home(args_t *flags)
+{
+    if (ptrace(PTRACE_ATTACH, flags->pid, 0, 0) == -1) {
+        perror("ptrace");
+        return RET_ERROR;
+    }
+    return RET_VALID;
+}
+
+int my_strace(int argc, char **argv)
 {
     args_t flags = {0};
-    pid_t pid = 0;
 
     get_args(argc, argv, &flags);
     if (flags.filename == NULL && flags.pid == 0) {
         fprintf(stderr, "Invalid arguments\n");
         return RET_ERROR;
     }
-    pid = fork();
-    if (pid == -1) {
-        perror("fork");
-        return RET_ERROR;
+    if (flags.flag & PID) {
+        if (follow_me_home(&flags) == RET_ERROR)
+            return RET_ERROR;
+    } else {
+        if (fork_me_hard(flags.filename, &flags) == RET_ERROR)
+            return RET_ERROR;
     }
-    if (pid == 0)
-        return child(flags.filename);
-    return parent(pid);
+    return parent(flags.pid);
 }

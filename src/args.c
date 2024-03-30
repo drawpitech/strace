@@ -41,7 +41,7 @@ void get_args(int argc, char **argv, args_t *flags)
         }
         if (strcmp(argv[i], "-p") == 0 && argv[i + 1] != NULL) {
             flags->flag |= PID;
-            flags->pid = atoi(argv[i]);
+            flags->pid = atoi(argv[i + 1]);
             i += 1;
         }
         if (argv[i][0] == '-' || flags->filename != NULL) {
