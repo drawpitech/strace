@@ -1,6 +1,6 @@
 /*
 ** EPITECH PROJECT, 2021
-** strace
+** my_strace
 ** File description:
 ** syscall
 */
