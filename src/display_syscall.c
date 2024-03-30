@@ -10,8 +10,9 @@
 #include "strace.h"
 #include "syscall.h"
 
+static const size_t EXECVE_ID = 59;
 static const size_t EXIT_ID = 60;
-static const size_t EXIT_GROUP_ID = 60;
+static const size_t EXIT_GROUP_ID = 231;
 
 static void display_return(strace_t *strace, const syscall_t *syscall)
 {
@@ -36,6 +37,11 @@ static void display_args(strace_t *strace, const syscall_t *syscall)
         strace->regs.rcx, strace->regs.r8, strace->regs.r9,
     };
 
+    if (strace->regs.orig_rax == EXECVE_ID) {
+        printf("\"%s\", [\"%s\"], 0x%llx /* %d vars */",
+            strace->filename, strace->filename, strace->regs.rdx, 0);
+        return;
+    }
     for (size_t i = 0; i < 6 && syscall->args[i] != 0; i++) {
         if (i != 0)
             printf(", ");
