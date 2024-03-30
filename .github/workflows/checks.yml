@@ -53,7 +53,7 @@ jobs:
 
       - name: Fix headers
         run: |
-          nix run github:drawpitech/EpiHeader -- --name "myftp"
+          nix run github:drawpitech/EpiHeader -- --name "my_strace"
           git add .
           git commit -m "Fix headers" || echo "nothing to commit."
           git push origin || echo "nothing to push."
