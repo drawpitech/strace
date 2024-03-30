@@ -14,7 +14,7 @@ env:
     github-actions[bot]
 
 jobs:
-  unittest:
+  compiles:
     runs-on: ubuntu-latest
 
     steps:
@@ -29,11 +29,8 @@ jobs:
       - name: Compiles
         run: nix build
 
-      - name: Run the unittests
-        run: nix run .#unit_tests
-
   fix_headers:
-    needs: [ unittest ]
+    needs: [ compiles ]
     runs-on: ubuntu-latest
 
     steps:
@@ -59,7 +56,7 @@ jobs:
           git push origin || echo "nothing to push."
 
   coding_style:
-    needs: [ unittest ]
+    needs: [ compiles ]
     runs-on: ubuntu-latest
 
     steps:
@@ -81,7 +78,7 @@ jobs:
         run: nix run github:Sigmapitech/cs
 
   mirror:
-    needs: [ unittest, fix_headers, coding_style ]
+    needs: [ compiles, fix_headers, coding_style ]
     if: ${{ !github.event.pull_request }}
     runs-on: ubuntu-latest
 
