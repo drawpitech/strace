@@ -1,0 +1,23 @@
+# Binaries
+*.out
+my_strace
+
+# Compilation
+.build/
+*.o
+*.d
+*.a
+*.so
+result
+
+# Editors junk
+*~
+\#*#
+*.swp
+*.swo
+
+# Reports
+core.*
+*.log
+*.gcda
+*.gcno
