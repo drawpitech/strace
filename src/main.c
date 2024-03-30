@@ -9,12 +9,7 @@
 #include <sys/user.h>
 #include <sys/wait.h>
 #include <unistd.h>
-
-enum
-{
-    RET_VALID = 0,
-    RET_ERROR = 84
-};
+#include "strace.h"
 
 static char *getpath(char *buf, const char *filename)
 {
@@ -45,31 +40,23 @@ static int child(char **argv, char **env)
 
 static int parent(pid_t pid)
 {
-    /* wait4(pid, NULL, 0, NULL); */
-    /* while (ptrace(PTRACE_SYSCALL, pid, 0, 0) == 0) { */
-    /*     wait4(pid, NULL, 0, NULL); */
-    /*     long res = ptrace(PTRACE_PEEKUSER, pid, sizeof(long) * 1); */
-    /*     printf("The child made a system call: %ld\n", res); */
-    /* } */
     int status = 0;
-    struct user_regs_struct u_in;
-    struct ptrace_syscall_info info;
-    struct
-    {
-        uint64_t nr;
-        uint64_t args[6];
-    } a;
+    strace_t strace = {0};
 
-    while (waitpid(pid, &status, 0) && !WIFEXITED(status)) {
-        ptrace(PTRACE_GETREGS, pid, NULL, &u_in);
-        printf("rax: %lld\n", u_in.orig_rax);
-        /* ptrace(PTRACE_GET_SYSCALL_INFO, pid, sizeof info, &info); */
-        /* printf("The child made a system call: %d\n", info.op); */
-        /* for (size_t i = 0; i < info.entry.nr; i++) */
-        /*     printf("arg[%ld]: %lld\n", i, info.entry.args[i]); */
-        ptrace(PTRACE_SYSCALL, pid, NULL, NULL);
+    strace.pid = pid;
+    waitpid(pid, &status, 0);
+    if (WIFEXITED(status))
+        return RET_VALID;
+    if (ptrace(PTRACE_SETOPTIONS, strace.pid, 0, PTRACE_O_TRACEEXIT) == -1)
+        return RET_ERROR;
+    while (!WIFEXITED(status)) {
+        if (ptrace(PTRACE_GETREGS, pid, 0, &strace.regs) == -1)
+            return RET_ERROR;
+        display_syscall(&strace);
+        if (ptrace(PTRACE_SINGLESTEP, pid, 0, 0) == -1)
+            return RET_ERROR;
+        waitpid(pid, &status, 0);
     }
-    printf("The child tracing is now done.\n");
     return RET_VALID;
 }
 

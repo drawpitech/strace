@@ -7,10 +7,6 @@
 
 #pragma once
 
-#include <stdlib.h>
-
-#include "strace.h"
-
 enum arg_type
 {
     NUM = 1,
@@ -135,7 +131,7 @@ typedef struct
     enum arg_type arg6;
 } syscall_t;
 
-static const syscall_t table[] = {
+static const syscall_t SYSCALLS[] = {
     {"read", NUM, NUM, VOID_P, NUM, 0, 0, 0},
     {"write", NUM, NUM, STRING, NUM, 0, 0, 0},
     {"open", NUM, STRING, NUM, 0, 0, 0, 0},
