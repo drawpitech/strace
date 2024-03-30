@@ -35,7 +35,7 @@ static char *getpath(char *buf, const char *filename)
     return buf;
 }
 
-static int child(char *filename)
+static int make_me_a_child(char *filename)
 {
     char buf[PATH_MAX] = {0};
     char *argv[2] = {filename, NULL};
@@ -48,7 +48,7 @@ static int child(char *filename)
     return RET_ERROR;
 }
 
-static int parent(pid_t pid)
+static int calling_your_parent(pid_t pid)
 {
     int status = 0;
     strace_t strace = {0};
@@ -70,7 +70,7 @@ static int parent(pid_t pid)
     return RET_VALID;
 }
 
-static int fork_me_hard(char *filename, args_t *strace)
+static int fork_me_hard(char *filename, strace_t *strace)
 {
     strace->pid = fork();
     if (strace->pid == -1) {
@@ -78,13 +78,13 @@ static int fork_me_hard(char *filename, args_t *strace)
         return RET_ERROR;
     }
     if (strace->pid == 0)
-        return child(filename);
+        return make_me_a_child(filename);
     return RET_VALID;
 }
 
-static int follow_me_home(args_t *flags)
+static int follow_me_home(pid_t pid)
 {
-    if (ptrace(PTRACE_ATTACH, flags->pid, 0, 0) == -1) {
+    if (ptrace(PTRACE_ATTACH, pid, 0, 0) == -1) {
         perror("ptrace");
         return RET_ERROR;
     }
@@ -93,19 +93,19 @@ static int follow_me_home(args_t *flags)
 
 int my_strace(int argc, char **argv)
 {
-    args_t flags = {0};
+    strace_t strace = {0};
 
-    get_args(argc, argv, &flags);
-    if (flags.filename == NULL && flags.pid == 0) {
+    get_args(argc, argv, &strace);
+    if (strace.filename == NULL && strace.pid == 0) {
         fprintf(stderr, "Invalid arguments\n");
         return RET_ERROR;
     }
-    if (flags.flag & PID) {
-        if (follow_me_home(&flags) == RET_ERROR)
+    if (strace.flag & PID) {
+        if (follow_me_home(strace.pid) == RET_ERROR)
             return RET_ERROR;
     } else {
-        if (fork_me_hard(flags.filename, &flags) == RET_ERROR)
+        if (fork_me_hard(strace.filename, &strace) == RET_ERROR)
             return RET_ERROR;
     }
-    return parent(flags.pid);
+    return calling_your_parent(strace.pid);
 }

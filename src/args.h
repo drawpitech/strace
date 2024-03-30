@@ -8,8 +8,9 @@
 #pragma once
 
 #include <stdbool.h>
-#include <stdlib.h>
 #include <sys/types.h>
+
+#include "strace.h"
 
 enum flags_e {
     HELP = 1 << 0,
@@ -30,10 +31,4 @@ static const flag_t OPTIONS[] = {
     {'p', "pid", PID, "Force a specific PID instead of executing a command"},
 };
 
-typedef struct {
-    size_t flag;
-    char *filename;
-    pid_t pid;
-} args_t;
-
-void get_args(int argc, char **argv, args_t *flags);
+void get_args(int argc, char **argv, strace_t *strace);

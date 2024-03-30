@@ -28,7 +28,7 @@ static void print_help(void)
     }
 }
 
-void get_args(int argc, char **argv, args_t *flags)
+void get_args(int argc, char **argv, strace_t *strace)
 {
     for (int i = 1; i < argc; i++) {
         if (strcmp(argv[i], "-h") == 0 || strcmp(argv[i], "--help") == 0) {
@@ -36,18 +36,18 @@ void get_args(int argc, char **argv, args_t *flags)
             exit(RET_VALID);
         }
         if (strcmp(argv[i], "-s") == 0 || strcmp(argv[i], "--full") == 0) {
-            flags->flag |= FULL;
+            strace->flag |= FULL;
             continue;
         }
         if (strcmp(argv[i], "-p") == 0 && argv[i + 1] != NULL) {
-            flags->flag |= PID;
-            flags->pid = atoi(argv[i + 1]);
+            strace->flag |= PID;
+            strace->pid = atoi(argv[i + 1]);
             i += 1;
         }
-        if (argv[i][0] == '-' || flags->filename != NULL) {
+        if (argv[i][0] == '-' || strace->filename != NULL) {
             fprintf(stderr, "Invalid option: %s\n", argv[i]);
             exit(RET_ERROR);
         }
-        flags->filename = argv[i];
+        strace->filename = argv[i];
     }
 }

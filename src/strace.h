@@ -19,6 +19,8 @@ enum {
 
 typedef struct {
     struct user_regs_struct regs;
+    size_t flag;
+    char *filename;
     pid_t pid;
 } strace_t;
 
