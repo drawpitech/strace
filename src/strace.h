@@ -22,5 +22,5 @@ typedef struct {
     pid_t pid;
 } strace_t;
 
-int strace(int argc, char **argv, char **env);
+int strace(int argc, char **argv);
 void display_syscall(strace_t *strace);

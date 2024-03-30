@@ -18,6 +18,8 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
+#include "args.h"
+
 static char *getpath(char *buf, const char *filename)
 {
     if (filename[0] == '/') {
@@ -33,14 +35,15 @@ static char *getpath(char *buf, const char *filename)
     return buf;
 }
 
-static int child(char **argv, char **env)
+static int child(char *filename)
 {
     char buf[PATH_MAX] = {0};
+    char *argv[2] = {filename, NULL};
 
     if (getpath(buf, argv[0]) == NULL)
         return RET_ERROR;
     ptrace(PTRACE_TRACEME, 0, 0, 0);
-    execve(argv[0], argv, env);
+    execvp(filename, argv);
     perror("execve");
     return RET_ERROR;
 }
@@ -67,12 +70,14 @@ static int parent(pid_t pid)
     return RET_VALID;
 }
 
-int strace(int argc, char **argv, char **env)
+int strace(int argc, char **argv)
 {
+    args_t flags = {0};
     pid_t pid = 0;
 
-    if (argc < 2) {
-        printf("Usage: %s <filename>\n", argv[0]);
+    get_args(argc, argv, &flags);
+    if (flags.filename == NULL && flags.pid == 0) {
+        fprintf(stderr, "Invalid arguments\n");
         return RET_ERROR;
     }
     pid = fork();
@@ -81,6 +86,6 @@ int strace(int argc, char **argv, char **env)
         return RET_ERROR;
     }
     if (pid == 0)
-        return child(argv + 1, env);
+        return child(flags.filename);
     return parent(pid);
 }

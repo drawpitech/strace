@@ -7,7 +7,7 @@
 
 #include "strace.h"
 
-int main(int argc, char **argv, char **env)
+int main(int argc, char **argv)
 {
-    return strace(argc, argv, env);
+    return strace(argc, argv);
 }
