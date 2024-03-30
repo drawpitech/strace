@@ -3,12 +3,15 @@
 #include "strace.h"
 #include "syscall.h"
 
-static void display_return(strace_t *strace, const syscall_t *syscall) {
+static const size_t EXIT_ID = 60;
+static const size_t EXIT_GROUP_ID = 60;
+
+static void display_return(strace_t *strace, const syscall_t *syscall)
+{
     size_t id = strace->regs.orig_rax;
 
     printf(") = ");
-    // exit && exit_group
-    if (id == 60 || id == 231) {
+    if (id == EXIT_ID || id == EXIT_GROUP_ID) {
         printf("?\n+++ exited with %lld +++\n", strace->regs.rdi);
         return;
     }
@@ -16,7 +19,21 @@ static void display_return(strace_t *strace, const syscall_t *syscall) {
         printf("?\n");
         return;
     }
-    printf("%lld\n", strace->regs.rax);
+    printf("0x%llx\n", strace->regs.rax);
+}
+
+static void display_args(strace_t *strace, const syscall_t *syscall)
+{
+    unsigned long long args[6] = {
+        strace->regs.rdi, strace->regs.rsi, strace->regs.rdx,
+        strace->regs.rcx, strace->regs.r8,  strace->regs.r9,
+    };
+
+    for (size_t i = 0; i < 6 && syscall->args[i] != 0; i++) {
+        if (i != 0)
+            printf(", ");
+        printf("0x%llx", args[i]);
+    }
 }
 
 void display_syscall(strace_t *strace)
@@ -28,5 +45,6 @@ void display_syscall(strace_t *strace)
         return;
     syscall = &SYSCALLS[id];
     printf("%s(", syscall->name);
+    display_args(strace, syscall);
     display_return(strace, syscall);
 }
