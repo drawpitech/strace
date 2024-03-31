@@ -32,7 +32,7 @@ static void display_return(strace_t *strace, const syscall_t *syscall)
         printf("?\n");
         return;
     }
-    printf("0x%llx\n", strace->regs.rax);
+    printf((strace->flag & FULL) ? "%lld\n" : "0x%llx\n", strace->regs.rax);
 }
 
 static void display_string(strace_t *strace, unsigned long long arg)
