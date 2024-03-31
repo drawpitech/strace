@@ -1,6 +1,6 @@
 # Binaries
 *.out
-my_strace
+strace
 
 # Compilation
 .build/

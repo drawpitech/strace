@@ -4,13 +4,9 @@
     utils.url = "github:numtide/flake-utils";
   };
 
-  outputs = {
-    self,
-    nixpkgs,
-    utils,
-  }:
-    utils.lib.eachDefaultSystem (system: let
-        pkgs = nixpkgs.legacyPackages.${system};
+  outputs = {self, ...} @ inputs:
+    inputs.utils.lib.eachDefaultSystem (system: let
+        pkgs = inputs.nixpkgs.legacyPackages.${system};
         cc = pkgs.gcc12;
       in rec
       {
@@ -32,7 +28,7 @@
         packages = {
           default = packages.strace;
           strace = pkgs.stdenv.mkDerivation rec {
-            name = "my_strace";
+            name = "strace";
             src = ./.;
 
             buildInputs = [cc] ++ (with pkgs; [glibc gnumake]);

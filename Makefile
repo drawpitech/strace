@@ -17,7 +17,7 @@ CFLAGS += -iquote ./src
 LDFLAGS :=
 
 # ↓ Binaries
-NAME := my_strace
+NAME := strace
 TEST_NAME := unit_tests
 ASAN_NAME := asan
 PROF_NAME := prof
