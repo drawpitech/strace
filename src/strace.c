@@ -48,24 +48,22 @@ static int make_me_a_child(char *filename)
     return RET_ERROR;
 }
 
-static int calling_your_parent(pid_t pid)
+static int calling_your_parent(strace_t *strace)
 {
     int status = 0;
-    strace_t strace = {0};
 
-    strace.pid = pid;
-    waitpid(pid, &status, 0);
+    waitpid(strace->pid, &status, 0);
     if (WIFEXITED(status))
         return RET_VALID;
-    if (ptrace(PTRACE_SETOPTIONS, strace.pid, 0, PTRACE_O_TRACEEXIT) == -1)
+    if (ptrace(PTRACE_SETOPTIONS, strace->pid, 0, PTRACE_O_TRACEEXIT) == -1)
         return RET_ERROR;
     while (!WIFEXITED(status)) {
-        if (ptrace(PTRACE_GETREGS, pid, 0, &strace.regs) == -1)
+        if (ptrace(PTRACE_GETREGS, strace->pid, 0, &strace->regs) == -1)
             return RET_ERROR;
-        display_syscall(&strace);
-        if (ptrace(PTRACE_SINGLESTEP, pid, 0, 0) == -1)
+        display_syscall(strace);
+        if (ptrace(PTRACE_SINGLESTEP, strace->pid, 0, 0) == -1)
             return RET_ERROR;
-        waitpid(pid, &status, 0);
+        waitpid(strace->pid, &status, 0);
     }
     return RET_VALID;
 }
@@ -107,5 +105,5 @@ int my_strace(int argc, char **argv)
         if (fork_me_hard(strace.filename, &strace) == RET_ERROR)
             return RET_ERROR;
     }
-    return calling_your_parent(strace.pid);
+    return calling_your_parent(&strace);
 }

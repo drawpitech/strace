@@ -5,8 +5,13 @@
 ** display_syscall
 */
 
+#include <aio.h>
+#include <stddef.h>
 #include <stdio.h>
+#include <string.h>
+#include <sys/ptrace.h>
 
+#include "args.h"
 #include "strace.h"
 #include "syscall.h"
 
@@ -30,6 +35,32 @@ static void display_return(strace_t *strace, const syscall_t *syscall)
     printf("0x%llx\n", strace->regs.rax);
 }
 
+static void display_arg(
+    strace_t *strace, const syscall_t *syscall,
+    unsigned long long arg, enum arg_type type)
+{
+    static char buffer[BUFSIZ] = {0};
+    unsigned long long tmp = 0;
+
+    if (!(strace->flag & FULL)) {
+        printf("0x%llx", arg);
+        return;
+    }
+    if (type != STRING) {
+        printf("%lld", arg);
+        return;
+    }
+    for (ptrdiff_t diff = 0;; diff += sizeof arg) {
+        tmp = ptrace(PTRACE_PEEKDATA, strace->pid, arg + diff, 0);
+        if (tmp == -1)
+            break;
+        strncpy(buffer + diff, (char *)&tmp, sizeof tmp);
+        if (memchr(&tmp, '\0', sizeof tmp) != NULL)
+            break;
+    }
+    printf("\"%s\"", buffer);
+}
+
 static void display_args(strace_t *strace, const syscall_t *syscall)
 {
     unsigned long long args[6] = {
@@ -45,7 +76,7 @@ static void display_args(strace_t *strace, const syscall_t *syscall)
     for (size_t i = 0; i < 6 && syscall->args[i] != 0; i++) {
         if (i != 0)
             printf(", ");
-        printf("0x%llx", args[i]);
+        display_arg(strace, syscall, args[i], syscall->args[i]);
     }
 }
 
